@@ -1,5 +1,5 @@
 {
-  "name": "react-example",
+  "name": "cmr-player",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -13,11 +13,9 @@
   "dependencies": {
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
-    "dotenv": "^17.2.3",
     "lucide-react": "^0.546.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0",
-    "vite": "^6.2.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
