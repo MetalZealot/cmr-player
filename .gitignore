@@ -18,3 +18,4 @@ dist-ssr/
 
 # AI Studio metadata
 metadata.json
+.claude/
