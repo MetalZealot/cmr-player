@@ -9,7 +9,7 @@ This file documents the changes, experiments, and decisions made during developm
 - **Dead Gemini config**: Removed the `GEMINI_API_KEY` define from `vite.config.ts`, which was exposing an unused environment variable to the frontend.
 
 ### Changed
-- **AI_INSTRUCTIONS.md relocated**: Moved from the repo root to `.github/AI_INSTRUCTIONS.md` to keep the root directory clean without losing the development guidance file.
+- **AI_INSTRUCTIONS.md replaced**: Superseded by `CLAUDE.md` at the repo root, which serves as the canonical AI development guide for this project. The old file is no longer needed.
 - **API URL centralized**: The Yesstreaming API base URL (`https://ec2.yesstreaming.net:1150`) was hardcoded in 5 places across 3 files (`useRadioData.ts`, `TrackRequestModal.tsx`, `NowPlaying.tsx`). Extracted into a single constant `API_BASE_URL` in the new file `src/utils/constants.ts`. Future URL changes now require a single edit.
 
 ---
