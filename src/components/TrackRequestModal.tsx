@@ -62,7 +62,23 @@ export const TrackRequestModal = ({ isOpen, onClose }: { isOpen: boolean; onClos
       const response = await fetch(url);
       
       if (!response.ok) throw new Error('Request failed');
-      
+
+      // The API returns HTTP 200 even on failure — errors arrive as {"error": "..."}
+      // in the body, while success is an empty body. Verified against the live API.
+      const body = await response.text();
+      if (body.trim()) {
+        const result = JSON.parse(body);
+        if (result.error) {
+          const messages: Record<string, string> = {
+            ip_timeout: 'You requested a song recently. Please wait a bit before requesting again.',
+            track_timeout: 'This track was requested recently. Try a different one.',
+            track_not_found: 'This track is no longer available for requests.',
+          };
+          setToast({ type: 'error', message: messages[result.error] ?? 'Failed to send request. Please try again.' });
+          return;
+        }
+      }
+
       setToast({ type: 'success', message: 'Request sent successfully!' });
       setTimeout(() => {
         onClose();

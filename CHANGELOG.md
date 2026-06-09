@@ -2,6 +2,21 @@
 
 This file documents the changes, experiments, and decisions made during development sessions.
 
+## Session: 2026-06-09
+
+### Fixed
+- **Stream errors now visible**: The `error` state from `useRadioData` was returned but never rendered — if the channel fetch failed, the header showed a loading skeleton forever. `App.tsx` now shows a red banner above the Now Playing card when there's an error and no channel data yet. The banner is suppressed once data has loaded so a single failed poll doesn't flash a warning over a working player.
+- **AudioPlayer live-edge rejoin**:
+  - *The problem*: Pausing an `<audio>` element on a live stream and resuming plays from the stale buffer, drifting listeners behind live. Some browsers also keep downloading the stream in the background while paused.
+  - *What we kept*: Pause now fully detaches the source (`removeAttribute('src')` + `load()`), and play re-attaches it — so resume always rejoins the live edge. The `src` attribute moved out of JSX into `togglePlay` since React would otherwise own it.
+- **AudioPlayer state desync**: `isPlaying` was only toggled by the button, so a dropped stream or OS-level pause left the UI showing "playing". The element's `onPlay`/`onPause`/`onError` events now drive the state. The `onError` handler ignores the abort fired by detaching `src` on pause.
+- **Pause button no longer locks up during stalls**: The play/pause button was `disabled` while buffering, which meant a network stall made it impossible to stop playback. The button is now always clickable.
+- **Track request false success**:
+  - *What we found*: `/api/playrequest/add/` returns HTTP 200 even on failure, with errors as `{"error": "..."}` in the body (verified live with an invalid track ID → `{"error": "track_not_found"}`, status 200). The modal only checked `response.ok`, so rate-limited or failed requests showed "Request sent successfully!"
+  - *What we kept*: The modal now reads the body — empty body is success, an `error` key maps to a friendly message per error code (`ip_timeout`, `track_timeout`, `track_not_found`).
+
+---
+
 ## Session: 2026-03-14
 
 ### Removed

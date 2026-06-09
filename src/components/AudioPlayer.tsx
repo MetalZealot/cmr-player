@@ -15,21 +15,25 @@ export const AudioPlayer = ({ streamUrl }: { streamUrl: string }) => {
   }, [volume, isMuted]);
 
   const togglePlay = async () => {
-    if (audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        try {
-          setIsBuffering(true);
-          await audioRef.current.play();
-          setIsPlaying(true);
-        } catch (err) {
-          console.error("Playback failed", err);
-          setIsPlaying(false);
-        } finally {
-          setIsBuffering(false);
-        }
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (isPlaying) {
+      // Live stream: detaching the source stops background buffering and
+      // guarantees the next play rejoins the live edge instead of resuming
+      // stale buffered audio.
+      audio.pause();
+      audio.removeAttribute('src');
+      audio.load();
+      setIsBuffering(false);
+    } else {
+      try {
+        setIsBuffering(true);
+        audio.src = streamUrl;
+        await audio.play();
+      } catch (err) {
+        console.error("Playback failed", err);
+        setIsBuffering(false);
       }
     }
   };
@@ -45,17 +49,26 @@ export const AudioPlayer = ({ streamUrl }: { streamUrl: string }) => {
 
   return (
     <div className="flex items-center gap-4 bg-zinc-950 p-2 pr-4 rounded-full border border-zinc-800/50 shadow-sm">
-      <audio 
-        ref={audioRef} 
-        src={streamUrl} 
+      {/* src is managed imperatively in togglePlay so pause can fully detach the stream */}
+      <audio
+        ref={audioRef}
         preload="none"
+        onPlay={() => setIsPlaying(true)}
+        onPause={() => setIsPlaying(false)}
         onPlaying={() => setIsBuffering(false)}
         onWaiting={() => setIsBuffering(true)}
+        onError={() => {
+          // Fires when the stream drops; ignore the abort caused by detaching src on pause
+          if (audioRef.current?.getAttribute('src')) {
+            setIsPlaying(false);
+            setIsBuffering(false);
+          }
+        }}
       />
       <button
         onClick={togglePlay}
-        disabled={isBuffering}
-        className="flex items-center justify-center w-10 h-10 rounded-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 transition-colors disabled:opacity-50 shadow-[0_0_15px_rgba(6,182,212,0.4)]"
+        title={isPlaying ? "Stop" : "Play"}
+        className="flex items-center justify-center w-10 h-10 rounded-full bg-cyan-500 hover:bg-cyan-400 text-zinc-950 transition-colors shadow-[0_0_15px_rgba(6,182,212,0.4)]"
       >
         {isBuffering ? (
           <div className="w-4 h-4 border-2 border-zinc-950 border-t-transparent rounded-full animate-spin" />

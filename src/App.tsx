@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { AlertCircle } from 'lucide-react';
 import { NowPlaying } from './components/NowPlaying';
 import { HistoryList } from './components/HistoryList';
 import { LiveChat } from './components/LiveChat';
@@ -30,7 +31,13 @@ export default function App() {
         {/* Main Content Area */}
         <main className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 lg:p-8 transition-all duration-300">
           <div className="max-w-5xl mx-auto flex flex-col">
-            <NowPlaying 
+            {error && !channelData && (
+              <div className="mb-6 p-3 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-2.5 text-red-400 text-sm font-medium">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{error} Retrying automatically…</span>
+              </div>
+            )}
+            <NowPlaying
               track={history[0] || null} 
               onRequestClick={() => setIsRequestModalOpen(true)} 
             />
