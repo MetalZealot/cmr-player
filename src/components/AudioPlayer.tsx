@@ -24,12 +24,16 @@ export const AudioPlayer = ({ streamUrl }: { streamUrl: string }) => {
       // stale buffered audio.
       audio.pause();
       audio.removeAttribute('src');
+      // load() discards queued media events, including the pause event from the
+      // line above — so isPlaying must be set explicitly here, not via onPause.
       audio.load();
+      setIsPlaying(false);
       setIsBuffering(false);
     } else {
       try {
         setIsBuffering(true);
         audio.src = streamUrl;
+        audio.load();
         await audio.play();
       } catch (err) {
         console.error("Playback failed", err);
